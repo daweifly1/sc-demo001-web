@@ -1,0 +1,161 @@
+<div class="page-wrap">
+  <form [formGroup]="formGroup" class="order-header-form">
+    <nz-form-item>
+      <nz-form-label nzSpan="8">领料申请单号</nz-form-label>
+      <nz-form-control nzSpan="16">
+        <input nz-input formControlName="applyNo" />
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label nzSpan="8">业务实体</nz-form-label>
+      <nz-form-control nzSpan="16">
+        <input nz-input formControlName="orgName" [maxlength]="InputMaxLen.Default" />
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label nzSpan="8" nzRequired>用途</nz-form-label>
+      <nz-form-control nzSpan="16">
+        <input nz-input formControlName="usage" [maxlength]="InputMaxLen.Default" />
+        <nz-form-explain *ngIf="formGroup.get('usage').dirty && formGroup.get('usage').errors">
+          必填
+        </nz-form-explain>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label nzSpan="8" nzRequired>物料类型</nz-form-label>
+      <nz-form-control nzSpan="16">
+        <nz-select formControlName="materialType" style="width:100%;">
+          <nz-option *ngFor="let item of materialTypeList;trackBy: trackByItem;" [nzValue]="item.id" [nzLabel]="item.name"></nz-option>
+        </nz-select>
+        <nz-form-explain *ngIf="formGroup.get('materialType').dirty && formGroup.get('materialType').errors">
+          必填
+        </nz-form-explain>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label nzSpan="8" nzRequired>领料部门</nz-form-label>
+      <nz-form-control nzSpan="16">
+        <input nz-input formControlName="applyDepartment" [maxlength]="InputMaxLen.Default" />
+        <nz-form-explain *ngIf="formGroup.get('applyDepartment').dirty && formGroup.get('applyDepartment').errors">
+          必填
+        </nz-form-explain>
+      </nz-form-control>
+
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label nzSpan="8" nzRequired>工段</nz-form-label>
+      <nz-form-control nzSpan="16">
+        <input nz-input formControlName="section" [maxlength]="InputMaxLen.Default" />
+        <nz-form-explain *ngIf="formGroup.get('section').dirty && formGroup.get('section').errors">
+          必填
+        </nz-form-explain>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label nzSpan="8" nzRequired>计划员</nz-form-label>
+      <nz-form-control nzSpan="16">
+        <input nz-input formControlName="plannerName" [maxlength]="InputMaxLen.Default" />
+        <nz-form-explain *ngIf="formGroup.get('plannerName').dirty && formGroup.get('plannerName').errors">
+          必填
+        </nz-form-explain>
+      </nz-form-control>
+
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label nzSpan="8" nzRequired>需要日期</nz-form-label>
+      <nz-form-control nzSpan="16">
+        <nz-date-picker nzFormat="yyyy-MM-dd HH:mm" [nzShowTime]="{ nzFormat: 'HH:mm' }" formControlName="needDate"  [nzDisabledDate]="disabledEnd"></nz-date-picker>
+        <nz-form-explain *ngIf="formGroup.get('needDate').dirty && formGroup.get('needDate').errors">
+          必填
+        </nz-form-explain>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label nzSpan="8" nzRequired>收货人</nz-form-label>
+      <nz-form-control nzSpan="16">
+        <input nz-input formControlName="receiverName" [maxlength]="InputMaxLen.Default" />
+        <nz-form-explain *ngIf="formGroup.get('receiverName').dirty && formGroup.get('receiverName').errors">
+          必填
+        </nz-form-explain>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label nzSpan="8" nzRequired>收货人电话</nz-form-label>
+      <nz-form-control nzSpan="16">
+        <input nz-input formControlName="receiverNumber" [maxlength]="InputMaxLen.Default" />
+        <nz-form-explain *ngIf="formGroup.get('receiverNumber').dirty && formGroup.get('receiverNumber').errors">
+          请输入正确的手机或电话号码
+        </nz-form-explain>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label nzSpan="8" nzRequired>收货地址</nz-form-label>
+      <nz-form-control nzSpan="16">
+        <input nz-input formControlName="receiverAddress" [maxlength]="InputMaxLen.Default" />
+        <nz-form-explain *ngIf="formGroup.get('receiverAddress').dirty && formGroup.get('receiverAddress').errors">
+          必填
+        </nz-form-explain>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label nzSpan="8">申请人</nz-form-label>
+      <nz-form-control nzSpan="16">
+        <input nz-input formControlName="applyName" [maxlength]="InputMaxLen.Default" />
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label nzSpan="8">申请日期</nz-form-label>
+      <nz-form-control nzSpan="16">
+        <nz-date-picker formControlName="applyDate" nzFormat="yyyy-MM-dd HH:mm"></nz-date-picker>
+      </nz-form-control>
+    </nz-form-item>
+  </form>
+  <div class="split-bar">
+    <span>物料信息</span>
+  </div>
+  <div class="detail-table-header">
+    <button nz-button nzType="info" (click)="onChooseMaterial()">选择物料</button>
+    <button nz-button nzType="info" (click)="deleteMaterial()">删除</button>
+  </div>
+
+  <app-ufast-table [tableConfig]="materialListConfig" [dataList]="materialDetailList" (selectedChange)="onMainChecked($event)"></app-ufast-table>
+  <ng-template #tableOpTpl let-code="materialCode">
+    <span class="operate-text" (click)="deleteMaterialOne(code)">删除</span>
+  </ng-template>
+
+  <ng-template #numTpl let-ctx="_this">
+    <nz-input-number [nzPrecision]="2" [(ngModel)]="ctx.amountApply" [nzMin]="0"></nz-input-number>
+  </ng-template>
+
+  <div class="table-footer-wrap">
+    <button nz-button nzType="info" (click)="submitOrder()">提交</button>
+    <button nz-button nzType="info" (click)="onCancel()">取消</button>
+  </div>
+</div>
+
+<app-right-side-table-box searchPlaceholder="请输入物料名称" [topTpl]="topTpl" (search)="getFactoryMaterialList()" title="选择物料"
+                          [selectedChangeEvent]="materialEmitter" [getListHandle]="getFactoryMaterialList" [dataList]="rightDataList" [(show)]="showMaterialBox"
+                          [tableConfig]="rightTableConfig" [idFiled]="materialField" (selectedChange)="chooseMaterial($event)">
+</app-right-side-table-box>
+<ng-template #topTpl>
+  <div class="right-box-top-wrap">
+    <nz-form-item>
+      <nz-form-label nzSpan="6">物料编码</nz-form-label>
+      <nz-form-control nzSpan="16">
+        <input nz-input [(ngModel)]="filterMaterial.code" />
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label nzSpan="6">物料名称</nz-form-label>
+      <nz-form-control nzSpan="16">
+        <input nz-input [(ngModel)]="filterMaterial.name" />
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <div nz-col nzSpan="6"></div>
+      <div nz-col nzSpan="16">
+        <button nzType="primary" (click)="getFactoryMaterialList()" nz-button>查询</button>
+      </div>
+    </nz-form-item>
+  </div>
+</ng-template>

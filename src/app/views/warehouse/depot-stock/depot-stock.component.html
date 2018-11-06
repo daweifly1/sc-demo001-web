@@ -1,0 +1,70 @@
+<app-tab-route tabTitle="仓库库存">
+  <ng-container *ngIf="selectedPage === tabPageType.ManagePage">
+    <app-ufast-table-nav searchPlaceholder="物料描述"
+                         (search)="getList()" [(searchText)]="filters.materialName" [tableConfig]="tableConfig"
+                         (advancedSearch)="fullSearch()" (refresh)="getList()"></app-ufast-table-nav>
+    <div class="advanced-search clear-fix" *ngIf="fullSearchShow">
+      <div nz-col nzSpan="6">
+        <nz-form-item>
+          <nz-form-label nzSpan="10">物料描述</nz-form-label>
+          <nz-form-control nzSpan="14">
+            <input nz-input [(ngModel)]="filters.materialName">
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div nz-col nzSpan="6">
+        <nz-form-item>
+          <nz-form-label nzSpan="10">物料编码</nz-form-label>
+          <nz-form-control nzSpan="14">
+            <input nz-input [(ngModel)]="filters.materialCode">
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div nz-col nzSpan="6">
+        <nz-form-item>
+          <nz-form-label nzSpan="10">仓库编码</nz-form-label>
+          <nz-form-control nzSpan="14">
+            <input nz-input [(ngModel)]="filters.warehouseCode">
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div nz-col nzSpan="6">
+        <nz-form-item>
+          <nz-form-label nzSpan="10">库区</nz-form-label>
+          <nz-form-control nzSpan="14">
+            <input nz-input [(ngModel)]="filters.areaCode">
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div nz-col nzSpan="6">
+        <nz-form-item>
+          <nz-form-label nzSpan="10">储位</nz-form-label>
+          <nz-form-control nzSpan="14">
+            <input nz-input [(ngModel)]="filters.locationCode">
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div nz-col nzSpan="24" class="btn-bar">
+        <button nz-button nzType="primary" (click)="getList()">搜索</button>
+        <button nz-button nzType="info" (click)="fullSearchReset()">重置</button>
+        <button nz-button nzType="default" (click)="fullSearchClose()">收起</button>
+      </div>
+    </div>
+
+    <app-ufast-table [tableConfig]="tableConfig" [dataList]="DataList"
+                     [getListHandle]="getList"></app-ufast-table>
+  </ng-container>
+  <ng-template #materialNoTpl let-materialNo="materialCode" let-locationCode="locationCode">
+    <span class="operate-text" (click)="detailDepotStock(locationCode, materialNo)">{{materialNo}}</span>
+  </ng-template>
+
+  <ng-container *ngIf="selectedPage === tabPageType.DetailPage">
+    <app-detail-stock (finish)="onChildFinish()" [InlocationCode]="locationCode"
+                      [InmaterialNo]="materialNo"></app-detail-stock>
+  </ng-container>
+</app-tab-route>
+
+
+<ng-template #navBreakcrumb>
+  <app-nav-breadcrumb></app-nav-breadcrumb>
+</ng-template>

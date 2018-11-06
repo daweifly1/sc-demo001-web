@@ -1,0 +1,40 @@
+[nz-normal] {
+  margin-bottom: 10px;
+  background: #EDEDEB;
+  [nz-TopBottom] {
+    margin: 12px 0;
+  }
+  [nz-font] {
+    font-size: 16px;
+    font-family: PingFangSC-Medium;
+    color: #333333;
+    margin-left: 20px;
+    margin-top: 8px;
+    margin-bottom: 0;
+  }
+  [nz-button] {
+    margin-right: 8px;
+    margin-bottom: 12px;
+  }
+  [nz-setButton] {
+    background: #EDEDEB;
+    margin-right: 0;
+    margin-bottom: 0;
+  }
+  [nz-button-first] {
+    margin-left: 14px;
+  }
+  [nz-setWidth] {
+    width: 40px;
+    padding-left: 8px;
+    font-size: 12px;
+    color: #009FE0;
+  }
+}
+.header{
+  background: #FFFFFF;
+  padding-top: 10px;
+}
+.header>div{
+ margin: 15px 0 10px 20px;
+}

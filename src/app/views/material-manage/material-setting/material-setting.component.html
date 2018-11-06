@@ -1,0 +1,116 @@
+<app-tab-route tabTitle="物料材设">
+  <ng-container *ngIf="selectedPage === tabPageType.ManagePage">
+    <app-ufast-table-nav [leftTemplate]="leftTpl" searchPlaceholder="物料名称" [(searchText)]="filters.name"
+      (advancedSearch)="fullSearch()" (search)="getList()" (refresh)="getList()" [tableConfig]="tableConfig">
+    </app-ufast-table-nav>
+    <ng-template #leftTpl>
+      <button nz-button nzType="info" (click)="toAddPage()" *appAuthBtu="ActionCode.materialAdd">新增</button>
+      <button nz-button nzType="default">导入计划价</button>
+    </ng-template>
+
+    <div class="advanced-search clear-fix" *ngIf="fullSearchShow">
+      <form class="advanceSearch-form">
+        <nz-form-item>
+          <nz-form-label nzSpan="10">物料名称</nz-form-label>
+          <nz-form-control nzSpan="14">
+            <input nz-input [(ngModel)]="filters.name" name="name">
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzSpan="10">物料类别</nz-form-label>
+          <nz-form-control nzSpan="14">
+            <nz-select nzPlaceHolder="请选择" class="selectStyle" [(ngModel)]="filters.materialType" name="materialType">
+              <nz-option nzValue="" nzLabel="请选择"></nz-option>
+              <nz-option nzValue="1" nzLabel="材料"></nz-option>
+              <nz-option nzValue="2" nzLabel="备件"></nz-option>
+              <nz-option nzValue="3" nzLabel="设备"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzSpan="10">物料分类</nz-form-label>
+          <nz-form-control nzSpan="14">
+            <nz-cascader class="selectStyle" (nzVisibleChange)="showMaterialClass($event)" (nzSelect)="selectMaterialClassItem($event)"
+              [(ngModel)]="materialClassId" [(nzOptions)]="materialClassArry" nzPlaceHolder="请选择物料分类" name="materialClassId">
+            </nz-cascader>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzSpan="10">物料编码</nz-form-label>
+          <nz-form-control nzSpan="14">
+            <input nz-input [(ngModel)]="filters.code" name="code">
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzSpan="10">分类名称</nz-form-label>
+          <nz-form-control nzSpan="14">
+            <input nz-input [(ngModel)]="filters.materialClassification" name="materialClassification">
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzSpan="10">图号</nz-form-label>
+          <nz-form-control nzSpan="14">
+            <input nz-input [(ngModel)]="filters.drawingNumber" name="drawingNumber">
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzSpan="10">材质</nz-form-label>
+          <nz-form-control nzSpan="14">
+            <input nz-input [(ngModel)]="filters.material" name="material">
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzSpan="10">品牌</nz-form-label>
+          <nz-form-control nzSpan="14">
+            <input nz-input [(ngModel)]="filters.brand" name="brand">
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzSpan="10">计量单位</nz-form-label>
+          <nz-form-control nzSpan="14">
+            <nz-select nzPlaceHolder="请选择" class="selectStyle" [(ngModel)]="filters.unit" name="unit">
+              <nz-option nzValue="" nzLabel="请选择"></nz-option>
+              <nz-option nzValue="吨" nzLabel="吨"></nz-option>
+              <nz-option nzValue="套" nzLabel="套"></nz-option>
+              <nz-option nzValue="件" nzLabel="件"></nz-option>
+              <nz-option nzValue="个" nzLabel="个"></nz-option>
+              <nz-option nzValue="箱" nzLabel="箱"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+      <div nz-col nzSpan="24" class="btn-bar">
+        <button nz-button nzType="primary" (click)="getList()">搜索</button>
+        <button nz-button nzType="info" (click)="advanceSearchReset()">重置</button>
+        <button nz-button nzType="default" (click)="fullSearchClose()">收起</button>
+      </div>
+    </div>
+    <app-ufast-table [tableConfig]="tableConfig" [dataList]="dataList" [getListHandle]="getList"></app-ufast-table>
+  </ng-container>
+  <ng-template #operation let-id="id" let-isDelete="isDelete">
+    <span [appEnable]="buttonState[id].edit" (click)="update(id)" *appAuthBtu="ActionCode.materialEdit">编辑</span>
+    <span [appEnable]="buttonState[id].freeze" (click)="freezeOrThaw(0,id)" *appAuthBtu="ActionCode.materialFreeze">冻结</span>
+    <span [appEnable]="buttonState[id].thaw" (click)="freezeOrThaw(1,id)" *appAuthBtu="ActionCode.materialThaw">解冻</span>
+  </ng-template>
+
+  <ng-template #codeTpl let-code="code" let-id="id">
+    <span class="operate-text" (click)="detail(id)">{{code}}</span>
+  </ng-template>
+
+  <ng-container *ngIf="selectedPage === tabPageType.SelectPage">
+      <app-material-select (finish)="backToList()"></app-material-select>
+    </ng-container>
+
+  <ng-container *ngIf="selectedPage === tabPageType.AddPage">
+    <app-material-setting-add (finish)="backToList()"></app-material-setting-add>
+  </ng-container>
+
+  <ng-container *ngIf="selectedPage === tabPageType.EditPage">
+    <app-material-setting-add (finish)="backToList()" [editId]="editId"></app-material-setting-add>
+  </ng-container>
+
+  <ng-container *ngIf="selectedPage === tabPageType.DetailPage">
+    <app-material-setting-detail (finish)="backToList()" [detailId]="detailId"></app-material-setting-detail>
+  </ng-container>
+
+</app-tab-route>

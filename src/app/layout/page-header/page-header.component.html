@@ -1,0 +1,19 @@
+
+<div nz-row nz-normal class="header">
+  <div nz-col nzSpan="10">
+    <select class="form-control" (change)="typeChange($event)" [ngModel]="searchType">
+      <option *ngFor="let item of genre" value="{{item.type}}">{{item.value}}</option>
+    </select>
+  </div>
+  <div nz-col nzSpan="7" nzOffset="5">
+    <nz-input-group nzSearch nzSize="large" [nzSuffix]="suffixButton" nzPrefixIcon="anticon anticon-search" nz-width >
+      <input type="text" nz-input placeholder=" "  (change)="titleChange($event)">
+    </nz-input-group>
+    <ng-template #suffixButton>
+      <button nz-button nzType="Default" nzSize="large" nzSearch nz-setButton>搜索</button>
+    </ng-template>
+  </div>
+  <div nz-col nzSpan="1" nz-setWidth>
+    高级搜索
+  </div>
+</div>

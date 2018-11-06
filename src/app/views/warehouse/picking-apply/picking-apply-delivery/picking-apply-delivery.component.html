@@ -1,0 +1,44 @@
+<div class="add-delivery-wrap">
+  <div class="detail-header-info">
+    <nz-form-item *ngFor="let item of headerFieldList;trackBy:trackByItem">
+      <nz-form-label nzSpan="8">{{item.name}}</nz-form-label>
+      <nz-form-control nzSpan="16">
+        <nz-form-text *ngIf="!item.pipe">{{orderDetail[item.field]}}</nz-form-text>
+        <nz-form-text *ngIf="item.pipe">{{orderDetail[item.field] | map:item.pipe}}</nz-form-text>
+      </nz-form-control>
+    </nz-form-item>
+  </div>
+  <div class="split-bar">
+    <span>物料信息</span>
+  </div>
+  <div class="table-header-wrap">
+    <button nz-button nzType="info" (click)="deleteMaterial()">删除</button>
+  </div>
+  <div>
+    <app-ufast-table [tableConfig]="materialTableConfig" [dataList]="materialList" (selectedChange)="onSelectedMaterial($event)"></app-ufast-table>
+    <ng-template #tableOpTpl let-lineId="_lineId">
+      <span class="operate-text" (click)="deleteSingle(lineId)">删除</span>
+    </ng-template>
+    <ng-template #deliveryNumTpl let-lineId="_lineId" let-max="amountApply">
+      <nz-input-number [nzPrecision]="2"  [(ngModel)]="auxData[lineId].amountOut"></nz-input-number>
+    </ng-template>
+    <ng-template #protocolStockTpl let-agreementNum="agreementNum" let-ctx="_this">
+      <span class="operate-text" (click)="showStockModal(false, ctx)">{{agreementNum}}</span>
+    </ng-template>
+    <ng-template #commonStockTpl let-nomalInvtNum="nomalInvtNum" let-lineId="_lineId" let-ctx="_this">
+      <span class="operate-text" (click)="showStockModal(true, ctx)">{{nomalInvtNum}}</span>
+    </ng-template>
+  </div>
+  <div class="table-footer-wrap">
+    <button nz-button nzType="info" (click)="submitOrder()">提交</button>
+    <button nz-button nzType="info" (click)="onCancel()">关闭</button>
+  </div>
+</div>
+<nz-modal [(nzVisible)]="stockModalShow" nzTitle="请选择库存" [nzFooter]="null" nzWidth="630px" (nzOnCancel)="onCancelStock()"  [nzBodyStyle]="{padding: '10px'}">
+  <div style="padding:10px;">
+    <app-ufast-table [dataList]="stockDataList" [tableConfig]="stockTableConfig" [getListHandle]="getStockList"></app-ufast-table>
+  </div>
+</nz-modal>
+<ng-template #agreeOperateTpl let-ctx="_this">
+  <span class="operate-text" (click)="chooseStock(ctx)">选择</span>
+</ng-template>

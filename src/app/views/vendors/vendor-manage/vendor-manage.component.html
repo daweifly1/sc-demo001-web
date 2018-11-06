@@ -1,0 +1,828 @@
+<app-tab-route tabTitle="供应商管理">
+  <ng-container *ngIf="selectedPage === PageType.MainListPage">
+
+    <app-ufast-table-nav searchPlaceholder="供应商名称" [leftTemplate]="actionBtn" (search)="getVendors()" [(searchText)]="vendorTableConfig.filters.companyName" (advancedSearch)="showAdvanced()" (refresh)="getVendors()"></app-ufast-table-nav>
+
+    <ng-template #actionBtn>
+      <button nz-button nzType="info" (click)="switchTab('addVendor')">新增</button>
+      <button nz-button nzType="default">删除</button>
+    </ng-template>
+    <div class="advanced-search clear-fix" *ngIf="advancedSearch">
+      <div nz-col nzSpan="6">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzFor="companyName">供应商名称</nz-form-label>
+          <nz-form-control nzSpan="16">
+            <input nz-input [(ngModel)]="vendorTableConfig.filters.companyName">
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="24" class="btn-bar">
+        <button nz-button nzType="primary" (click)="getVendors()">搜索</button>
+        <button nz-button nzType="info" (click)="resetSearch()">重置</button>
+        <button nz-button nzType="default" (click)="showAdvanced()">收起</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+        <nz-table nzSize="small" [nzData]="vendorList" [nzBordered]="true" [nzFrontPagination]="false" [nzTotal]="vendorTableConfig.total"
+          (nzPageIndexChange)="getVendors($event)" [(nzPageSize)]="vendorTableConfig.pageSize" [(nzPageIndex)]="vendorTableConfig.pageNum"
+          [nzShowQuickJumper]="true" [nzLoading]="vendorTableConfig.loading" [nzPageSizeOptions]="vendorTableConfig.pageSizeOptions"
+          [nzShowSizeChanger]="true" (nzPageSizeChange)="getVendors()">
+          <thead>
+            <tr>
+              <th nzWidth="40px" nzShowCheckbox [(nzChecked)]="vendorTableConfig.allChecked" (nzCheckedChange)="checkAll($event)"></th>
+              <th nzWidth="200px">操作</th>
+              <th *ngFor="let head of vendorTableConfig.headers;trackBy:trackByTableHead;" [nzWidth]="head.width">{{head.name}}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let vendor of vendorList;trackBy:trackByVendorId;">
+              <td [ngStyle]="{'width':'40px'}" nzShowCheckbox [(nzChecked)]="vendor.checked" (nzCheckedChange)="checkSingle($event,vendor)"></td>
+              <td>
+                <span class="operate-text" (click)="switchTab('lookOver',vendor.id)">查看</span>
+                <span class="operate-text" (click)="switchTab('editVendor',vendor.id)">编辑</span>
+              </td>
+              <td *ngFor="let head of vendorTableConfig.headers;trackBy:trackByTableHead">
+                <ng-container *ngIf="head.pipe">{{vendor[head.field] | map:head.pipe}}</ng-container>
+                <ng-container *ngIf="!head.pipe">{{vendor[head.field]}}</ng-container>
+              </td>
+            </tr>
+          </tbody>
+        </nz-table>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="selectedPage===PageType.AddPage || selectedPage===PageType.EditPage">
+    <form nz-form class="vendor-edit p-t-md clear-fix" [formGroup]="newVendorForm">
+
+      <div nz-col nzSpan="12" *ngIf="selectedPage===PageType.AddPage">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired nzFor="accountName">账号</nz-form-label>
+          <nz-form-control nzSpan="8">
+            <input nz-input formControlName="accountName">
+          </nz-form-control>
+          <div nz-col nzSpan="8" class="has-error p-l-xs">
+            <nz-form-explain *ngIf="newVendorForm.get('accountName').dirty && newVendorForm.get('accountName').errors">
+              Please input your name
+            </nz-form-explain>
+          </div>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired nzFor="companyName">公司名称</nz-form-label>
+          <nz-form-control nzSpan="8">
+            <input nz-input formControlName="companyName" [readonly]='selectedPage===PageType.EditPage'>
+          </nz-form-control>
+          <div nz-col nzSpan="8" class="has-error p-l-xs">
+              <nz-form-explain *ngIf="newVendorForm.get('companyName').dirty && newVendorForm.get('companyName').errors">
+                Please input your companyName
+              </nz-form-explain>
+            </div>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12" *ngIf="selectedPage===PageType.AddPage">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired nzFor="password">密码</nz-form-label>
+          <nz-form-control nzSpan="8">
+            <input nz-input formControlName="password">
+          </nz-form-control>
+          <div nz-col nzSpan="8" class="has-error p-l-xs">
+              <nz-form-explain *ngIf="newVendorForm.get('password').dirty && newVendorForm.get('password').errors">
+                Please input your password
+              </nz-form-explain>
+            </div>
+        </nz-form-item>
+      </div>
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzFor="shortName">公司简称</nz-form-label>
+          <nz-form-control nzSpan="8">
+            <input nz-input formControlName="shortName">
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+
+
+      <div nz-col nzSpan="12" *ngIf="selectedPage===PageType.AddPage">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired nzFor="password">确认密码</nz-form-label>
+          <nz-form-control nzSpan="8">
+            <input nz-input formControlName="password">
+          </nz-form-control>
+          <div nz-col nzSpan="8" class="has-error p-l-xs">
+              <nz-form-explain *ngIf="newVendorForm.get('password').dirty && newVendorForm.get('password').errors">
+                Please input your password
+              </nz-form-explain>
+            </div>
+        </nz-form-item>
+      </div>
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired nzFor="mobile">联系电话</nz-form-label>
+          <nz-form-control nzSpan="8">
+            <input nz-input formControlName="mobile">
+          </nz-form-control>
+          <div nz-col nzSpan="8" class="has-error p-l-xs">
+              <nz-form-explain *ngIf="newVendorForm.get('mobile').dirty && newVendorForm.get('mobile').errors">
+                Please input your mobile
+              </nz-form-explain>
+            </div>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired nzFor="bank">开户银行</nz-form-label>
+          <nz-form-control nzSpan="8">
+            <input nz-input formControlName="bank">
+          </nz-form-control>
+          <div nz-col nzSpan="8" class="has-error p-l-xs">
+              <nz-form-explain *ngIf="newVendorForm.get('bank').dirty && newVendorForm.get('bank').errors">
+                Please input your bank
+              </nz-form-explain>
+            </div>
+        </nz-form-item>
+      </div>
+
+
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzFor="areaCode">开户行地址</nz-form-label>
+          <nz-form-control nzSpan="8">
+            <input nz-input formControlName="areaCode">
+          </nz-form-control>
+          <div nz-col nzSpan="8" class="has-error p-l-xs">
+              <nz-form-explain *ngIf="newVendorForm.get('areaCode').dirty && newVendorForm.get('areaCode').errors">
+                Please input your areaCode
+              </nz-form-explain>
+            </div>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired nzFor="fax">传真</nz-form-label>
+          <nz-form-control nzSpan="8">
+            <input nz-input formControlName="fax">
+          </nz-form-control>
+          <div nz-col nzSpan="8" class="has-error p-l-xs">
+              <nz-form-explain *ngIf="newVendorForm.get('fax').dirty && newVendorForm.get('fax').errors">
+                Please input your fax
+              </nz-form-explain>
+            </div>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired nzFor="bankAccount">银行账号</nz-form-label>
+          <nz-form-control nzSpan="8">
+            <input nz-input formControlName="bankAccount">
+          </nz-form-control>
+          <div nz-col nzSpan="8" class="has-error p-l-xs">
+              <nz-form-explain *ngIf="newVendorForm.get('bankAccount').dirty && newVendorForm.get('bankAccount').errors">
+                Please input your bankAccount
+              </nz-form-explain>
+            </div>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired nzFor="unifiedSocialCreditcode">统一社会信用代码</nz-form-label>
+          <nz-form-control nzSpan="8">
+            <input nz-input formControlName="unifiedSocialCreditcode" [readonly]='selectedPage===PageType.EditPage'>
+          </nz-form-control>
+          <div nz-col nzSpan="8" class="has-error p-l-xs">
+              <nz-form-explain *ngIf="newVendorForm.get('unifiedSocialCreditcode').dirty && newVendorForm.get('unifiedSocialCreditcode').errors">
+                Please input your unifiedSocialCreditcode
+              </nz-form-explain>
+            </div>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8">所属行业</nz-form-label>
+          <nz-form-control nzSpan="8">
+            <nz-select formControlName="business" nzPlaceHolder="请选择所属行业">
+              <nz-option nzValue="1" nzLabel="建筑业"></nz-option>
+              <nz-option nzValue="2" nzLabel="金融业"></nz-option>
+              <nz-option nzValue="3" nzLabel="房地产"></nz-option>
+              <nz-option nzValue="4" nzLabel="图文欣赏"></nz-option>
+              <nz-option nzValue="5" nzLabel="广告业"></nz-option>
+              <nz-option nzValue="6" nzLabel="计算机"></nz-option>
+              <nz-option nzValue="8" nzLabel="江铜采购指数"></nz-option>
+              <nz-option nzValue="9" nzLabel="旅游业"></nz-option>
+            </nz-select>
+          </nz-form-control>
+          <div nz-col nzSpan="8" class="has-error p-l-xs">
+              <nz-form-explain *ngIf="newVendorForm.get('business').dirty && newVendorForm.get('business').errors">
+                Please input your business
+              </nz-form-explain>
+            </div>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired>供应范围</nz-form-label>
+          <nz-form-control nzSpan="8">
+            <input nz-input formControlName="businessScope">
+          </nz-form-control>
+          <div nz-col nzSpan="8" class="has-error p-l-xs">
+              <nz-form-explain *ngIf="newVendorForm.get('businessScope').dirty && newVendorForm.get('businessScope').errors">
+                Please input your businessScope
+              </nz-form-explain>
+            </div>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired>企业性质</nz-form-label>
+          <nz-form-control nzSpan="8">
+            <nz-select formControlName="companyType" nzPlaceHolder="请选择企业性质">
+              <nz-option nzValue="A1" nzLabel="国有独资"></nz-option>
+              <nz-option nzValue="A2" nzLabel="国有控股"></nz-option>
+              <nz-option nzValue="A3" nzLabel="国有参股"></nz-option>
+              <nz-option nzValue="B1" nzLabel="集体所有制"></nz-option>
+              <nz-option nzValue="C1" nzLabel="法人型联营"></nz-option>
+              <nz-option nzValue="C2" nzLabel="合伙型联营"></nz-option>
+              <nz-option nzValue="C3" nzLabel="合同型联营"></nz-option>
+              <nz-option nzValue="D1" nzLabel="中外合资"></nz-option>
+              <nz-option nzValue="D2" nzLabel="中外合作"></nz-option>
+              <nz-option nzValue="D3" nzLabel="外资独资"></nz-option>
+              <nz-option nzValue="E1" nzLabel="港澳台三资 合资"></nz-option>
+              <nz-option nzValue="E2" nzLabel="港澳台三资 合作"></nz-option>
+              <nz-option nzValue="E3" nzLabel="港澳台三资 独资"></nz-option>
+              <nz-option nzValue="F1" nzLabel="民营/私营"></nz-option>
+            </nz-select>
+          </nz-form-control>
+          <div nz-col nzSpan="8" class="has-error p-l-xs">
+              <nz-form-explain *ngIf="newVendorForm.get('companyType').dirty && newVendorForm.get('companyType').errors">
+                Please input your companyType
+              </nz-form-explain>
+            </div>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired nzFor="address">企业地址</nz-form-label>
+          <nz-form-control nzSpan="8">
+            <input nz-input formControlName="address">
+          </nz-form-control>
+          <div nz-col nzSpan="8" class="has-error p-l-xs">
+              <nz-form-explain *ngIf="newVendorForm.get('address').dirty && newVendorForm.get('address').errors">
+                Please input your address
+              </nz-form-explain>
+            </div>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired>经营类型</nz-form-label>
+          <nz-form-control nzSpan="8">
+            <nz-select formControlName="businessType" nzPlaceHolder="请选择经营类型">
+              <nz-option nzValue="1" nzLabel="生产商"></nz-option>
+              <nz-option nzValue="2" nzLabel="贸易商"></nz-option>
+              <nz-option nzValue="3" nzLabel="综合"></nz-option>
+            </nz-select>
+          </nz-form-control>
+          <div nz-col nzSpan="8" class="has-error p-l-xs">
+              <nz-form-explain *ngIf="newVendorForm.get('businessType').dirty && newVendorForm.get('businessType').errors">
+                Please input your businessType
+              </nz-form-explain>
+            </div>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired nzFor="legalName">法定代表人</nz-form-label>
+          <nz-form-control nzSpan="8">
+            <input nz-input formControlName="legalName">
+          </nz-form-control>
+          <div nz-col nzSpan="8" class="has-error p-l-xs">
+              <nz-form-explain *ngIf="newVendorForm.get('legalName').dirty && newVendorForm.get('legalName').errors">
+                Please input your legalName
+              </nz-form-explain>
+            </div>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired>企业简介</nz-form-label>
+          <nz-form-control nzSpan="8">
+            <input nz-input formControlName="introduction">
+          </nz-form-control>
+          <div nz-col nzSpan="8" class="has-error p-l-xs">
+              <nz-form-explain *ngIf="newVendorForm.get('introduction').dirty && newVendorForm.get('introduction').errors">
+                Please input your introduction
+              </nz-form-explain>
+            </div>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired nzFor="registeredCapital">注册资本</nz-form-label>
+          <nz-form-control nzSpan="8">
+            <input nz-input placeholder="请输入数字" formControlName="registeredCapital" onkeyup="if(/\D/.test(this.value)){alert('只能输入数字');this.value='';}" onafterpaste="this.value=this.value.replace(/\D/g,'')" >
+          </nz-form-control>
+          <div nz-col nzSpan="8" class="has-error p-l-xs">
+              <nz-form-explain *ngIf="newVendorForm.get('registeredCapital').dirty && newVendorForm.get('registeredCapital').errors">
+                Please input your registeredCapital
+              </nz-form-explain>
+            </div>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzFor="website">公司网址</nz-form-label>
+          <nz-form-control nzSpan="8">
+            <input nz-input formControlName="website">
+          </nz-form-control>
+          <div nz-col nzSpan="8" class="has-error p-l-xs">
+              <nz-form-explain *ngIf="newVendorForm.get('website').dirty && newVendorForm.get('website').errors">
+                Please input your website
+              </nz-form-explain>
+            </div>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired>成立日期</nz-form-label>
+          <nz-form-control nzSpan="8">
+            <nz-date-picker [nzFormat]="dateFormat" formControlName="establishDate" name="establishDate"></nz-date-picker>
+          </nz-form-control>
+          <div nz-col nzSpan="8" class="has-error p-l-xs">
+              <nz-form-explain *ngIf="newVendorForm.get('establishDate').dirty && newVendorForm.get('establishDate').errors">
+                Please input your establishDate
+              </nz-form-explain>
+            </div>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired nzFor="mailAddress">通讯地址</nz-form-label>
+          <nz-form-control nzSpan="8">
+            <input nz-input formControlName="mailAddress">
+          </nz-form-control>
+          <div nz-col nzSpan="8" class="has-error p-l-xs">
+              <nz-form-explain *ngIf="newVendorForm.get('mailAddress').dirty && newVendorForm.get('mailAddress').errors">
+                Please input your mailAddress
+              </nz-form-explain>
+            </div>
+        </nz-form-item>
+      </div>
+
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired nzFor="zipCode">邮政编码</nz-form-label>
+          <nz-form-control nzSpan="8">
+            <input nz-input formControlName="zipCode">
+          </nz-form-control>
+          <div nz-col nzSpan="8" class="has-error p-l-xs">
+              <nz-form-explain *ngIf="newVendorForm.get('zipCode').dirty && newVendorForm.get('zipCode').errors">
+                Please input your zipCode
+              </nz-form-explain>
+            </div>
+        </nz-form-item>
+      </div>
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzFor="zipCode">erp编码</nz-form-label>
+          <nz-form-control nzSpan="8">
+            <input nz-input formControlName="erpCode">
+          </nz-form-control>
+          <div nz-col nzSpan="8" class="has-error p-l-xs">
+            <nz-form-explain *ngIf="newVendorForm.get('erpCode').dirty && newVendorForm.get('erpCode').errors">
+              Please input your erpCode
+            </nz-form-explain>
+          </div>
+        </nz-form-item>
+      </div>
+
+      <!-- <div nz-col nzSpan="18" nzOffset="2" style="margin-top: 30px;">
+          <nz-tabset [nzTabPosition]="'top'" [nzType]="'card'">
+              <nz-tab *ngFor="let options of information" [nzTitle]=" options ">
+                <div *ngIf="options == '基本资料'">基本资料</div>
+
+                <div *ngIf="options == '企业联系人'">
+                  <nz-form-item>
+                    <nz-form-control nzSpan="8">
+                        <button class="operate-text" (click)="newForm(connecters)">新增</button>
+                      </nz-form-control>
+                    </nz-form-item>
+                    <nz-table #editRowTable nzBordered [nzData]="dataSet" [nzShowPagination]='false'>
+
+                        <thead>
+                          <tr>
+                            <th>姓名</th>
+                            <th>职务</th>
+                            <th>电话</th>
+                            <th>邮箱</th>
+                            <th>操作</th>
+                          </tr>
+                        </thead>
+                        <tbody formArrayName="connecters" style="line-height: 0.4;">
+                          <tr *ngFor="let form of connecters.controls; let i = index;" [formGroupName]="i">
+                            <td>
+                              <input type="text" formControlName="name">
+                            </td>
+                            <td>
+                              <input type="text" formControlName="position">
+                            </td>
+                            <td>
+                              <input type="text" formControlName="mobile">
+                            </td>
+                            <td>
+                              <input type="text" formControlName="mail">
+                            </td>
+                            <td>
+                              <button class="operate-text" (click)="removeForm(i)">删除</button>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </nz-table>
+                </div>
+
+                <div *ngIf="options == '资质文件信息'">
+
+                  <div nz-col nzSpan="12">
+                      <nz-form-item>
+                        <nz-form-label nzSpan="5" nzRequired nzFor="">证件名称</nz-form-label>
+                        <nz-form-control nzSpan="11">
+                          <input nz-input >
+                        </nz-form-control>
+                      </nz-form-item>
+                    </div>
+
+                    <div nz-col nzSpan="12">
+                        <nz-form-item>
+                          <nz-form-label nzSpan="14" nzRequired nzFor="">有效期起</nz-form-label>
+                          <nz-form-control nzSpan="10">
+                              <nz-date-picker [nzFormat]="dateFormat" ></nz-date-picker>
+                          </nz-form-control>
+                        </nz-form-item>
+                      </div>
+
+                    <div nz-col nzSpan="12">
+                        <nz-form-item>
+                          <nz-form-label nzSpan="5" nzRequired nzFor="">发证机构</nz-form-label>
+                          <nz-form-control nzSpan="11">
+                            <input nz-input >
+                          </nz-form-control>
+                        </nz-form-item>
+                      </div>
+
+                        <div nz-col nzSpan="12">
+                            <nz-form-item>
+                              <nz-form-label nzSpan="14" nzRequired nzFor="">有效期止</nz-form-label>
+                              <nz-form-control nzSpan="10">
+                                  <nz-date-picker [nzFormat]="dateFormat" ></nz-date-picker>
+                              </nz-form-control>
+                            </nz-form-item>
+                          </div>
+
+                          <div nz-col nzSpan="12">
+                              <nz-form-item>
+                                <nz-form-label nzSpan="5" nzRequired nzFor="">附件</nz-form-label>
+                                <nz-form-control nzSpan="11">
+                                  <input nz-input >
+                                </nz-form-control>
+                              </nz-form-item>
+                            </div>
+
+                            <div nz-col nzSpan="12">
+                                <nz-form-item>
+                                  <nz-form-label nzSpan="14" nzRequired nzFor="">资质类型</nz-form-label>
+                                  <nz-form-control nzSpan="10">
+                                    <input nz-input >
+                                  </nz-form-control>
+                                </nz-form-item>
+                              </div>
+                </div>
+
+                <div *ngIf="options == '评价等级'">评价等级</div>
+
+              </nz-tab>
+            </nz-tabset>
+      </div> -->
+
+      <div nz-col nzSpan="16" nzOffset="4" class="m-t-sm p-b-md">
+        <button nz-button nzType="primary" class="submit-button" type="submit" (click)="submitVendor(newVendorForm)">保存</button>
+        <button nz-button nzType="primary" class="submit-button" nzGhost="true" (click)="toggleManagePage()">取消</button>
+      </div>
+    </form>
+  </ng-container>
+
+  <ng-container *ngIf="selectedPage===PageType.LookPage">
+    <form nz-form class="vendor-edit p-t-md clear-fix">
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired nzFor="accountName">账号</nz-form-label>
+          <nz-form-control nzSpan="8">
+            {{detailVendor.companyName}}
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired nzFor="mobile">联系电话</nz-form-label>
+          <nz-form-control nzSpan="8">
+            {{detailVendor.mobile}}
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+          <nz-form-item>
+            <nz-form-label nzSpan="8" nzRequired nzFor="companyName">公司名称</nz-form-label>
+            <nz-form-control nzSpan="8">
+              {{detailVendor.companyName}}
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired nzFor="bank">开户银行</nz-form-label>
+          <nz-form-control nzSpan="8">
+            {{detailVendor.bank}}
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+
+      <div nz-col nzSpan="12">
+          <nz-form-item>
+            <nz-form-label nzSpan="8" nzRequired nzFor="fax">传真</nz-form-label>
+            <nz-form-control nzSpan="8">
+              {{detailVendor.fax}}
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzFor="areaCode">开户行地址</nz-form-label>
+          <nz-form-control nzSpan="8">
+            {{detailVendor.areaCode}}
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzFor="shortName">公司简称</nz-form-label>
+          <nz-form-control nzSpan="8">
+            {{detailVendor.shortName}}
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired nzFor="bankAccount">银行账号</nz-form-label>
+          <nz-form-control nzSpan="8">
+            {{detailVendor.bankAccount}}
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired nzFor="unifiedSocialCreditcode">统一社会信用代码</nz-form-label>
+          <nz-form-control nzSpan="8">
+            {{detailVendor.unifiedSocialCreditcode}}
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8">所属行业</nz-form-label>
+          <nz-form-control nzSpan="8">
+            {{detailVendor.business}}
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired>企业性质</nz-form-label>
+          <nz-form-control nzSpan="8">
+            {{detailVendor.companyType}}
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired>供应范围</nz-form-label>
+          <nz-form-control nzSpan="8">
+            {{detailVendor.businessScope}}
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired nzFor="address">企业地址</nz-form-label>
+          <nz-form-control nzSpan="8">
+            {{detailVendor.address}}
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired>经营类型</nz-form-label>
+          <nz-form-control nzSpan="8">
+            {{detailVendor.businessType}}
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired nzFor="legalName">法定代表人</nz-form-label>
+          <nz-form-control nzSpan="8">
+            {{detailVendor.legalName}}
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired>企业简介</nz-form-label>
+          <nz-form-control nzSpan="8">
+            {{detailVendor.introduction}}
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired nzFor="registeredCapital">注册资本</nz-form-label>
+          <nz-form-control nzSpan="8">
+            {{detailVendor.registeredCapital}}
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzFor="website">公司网址</nz-form-label>
+          <nz-form-control nzSpan="8">
+            {{detailVendor.website}}
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired>成立日期</nz-form-label>
+          <nz-form-control nzSpan="8">
+            {{detailVendor.establishDate | date:'yyyy-MM-dd'}}
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired nzFor="mailAddress">通讯地址</nz-form-label>
+          <nz-form-control nzSpan="8">
+            {{detailVendor.mailAddress}}
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label nzSpan="8" nzRequired nzFor="zipCode">邮政编码</nz-form-label>
+          <nz-form-control nzSpan="8">
+            {{detailVendor.zipCode}}
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <!-- <div nz-col nzSpan="24">
+        <nz-form-item>
+          <nz-form-label nzSpan="4">企业联系人</nz-form-label>
+        </nz-form-item>
+      </div>
+
+      <div nz-col nzSpan="18" nzOffset="2" style="margin-top: 30px;">
+          <nz-tabset [nzTabPosition]="'top'" [nzType]="'card'">
+              <nz-tab *ngFor="let options of information" [nzTitle]="options">
+
+                <div *ngIf="options == '基本资料'">基本资料</div>
+
+                <div *ngIf="options == '企业联系人'">
+                    <nz-table  nzBordered [nzData]="detailVendor.connecters" [nzShowPagination]='false'>
+                        <thead>
+                          <tr>
+                            <th>姓名</th>
+                            <th>职务</th>
+                            <th>电话</th>
+                            <th>邮箱</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let data of detailVendor.connecters">
+                            <td>{{data.name}}</td>
+                            <td>{{data.position}}</td>
+                            <td>{{data.mobile}}</td>
+                            <td>{{data.mail}}</td>
+                          </tr>
+                        </tbody>
+                      </nz-table>
+                </div>
+
+                <div *ngIf="options == '资质文件信息'">
+
+                  <div nz-col nzSpan="12">
+                      <nz-form-item>
+                        <nz-form-label nzSpan="5" nzRequired nzFor="">证件名称</nz-form-label>
+                        <nz-form-control nzSpan="11">
+                          <input nz-input >
+                        </nz-form-control>
+                      </nz-form-item>
+                    </div>
+
+                    <div nz-col nzSpan="12">
+                        <nz-form-item>
+                          <nz-form-label nzSpan="14" nzRequired nzFor="">有效期起</nz-form-label>
+                          <nz-form-control nzSpan="10">
+                              <nz-date-picker [nzFormat]="dateFormat" ></nz-date-picker>
+                          </nz-form-control>
+                        </nz-form-item>
+                      </div>
+
+                    <div nz-col nzSpan="12">
+                        <nz-form-item>
+                          <nz-form-label nzSpan="5" nzRequired nzFor="">发证机构</nz-form-label>
+                          <nz-form-control nzSpan="11">
+                            <input nz-input >
+                          </nz-form-control>
+                        </nz-form-item>
+                      </div>
+
+
+
+                        <div nz-col nzSpan="12">
+                            <nz-form-item>
+                              <nz-form-label nzSpan="14" nzRequired nzFor="">有效期止</nz-form-label>
+                              <nz-form-control nzSpan="10">
+                                  <nz-date-picker [nzFormat]="dateFormat" ></nz-date-picker>
+                              </nz-form-control>
+                            </nz-form-item>
+                          </div>
+
+                          <div nz-col nzSpan="12">
+                              <nz-form-item>
+                                <nz-form-label nzSpan="5" nzRequired nzFor="">附件</nz-form-label>
+                                <nz-form-control nzSpan="11">
+                                  <input nz-input >
+                                </nz-form-control>
+                              </nz-form-item>
+                            </div>
+
+                            <div nz-col nzSpan="12">
+                                <nz-form-item>
+                                  <nz-form-label nzSpan="14" nzRequired nzFor="">资质类型</nz-form-label>
+                                  <nz-form-control nzSpan="10">
+                                    <input nz-input >
+                                  </nz-form-control>
+                                </nz-form-item>
+                              </div>
+                </div>
+
+              </nz-tab>
+            </nz-tabset>
+      </div> -->
+
+      <div nz-col nzSpan="16" nzOffset="4" class="m-t-sm p-b-md">
+        <button nz-button nzType="primary" class="submit-button" nzGhost="true" (click)="toggleManagePage()">取消</button>
+      </div>
+    </form>
+  </ng-container>
+
+</app-tab-route>
